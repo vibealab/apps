@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Audio Music Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .player-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 28px;
+        }
+
+        .file-input-section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .file-input-section.highlight > .file-input-label {
+            color: black;
+            font-weight: bold;
+        }
+
+        .file-input-label {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .file-input-label:hover {
+            background: #5568d3;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .playlist {
+            background: #f5f5f5;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .playlist-item {
+            margin-bottom: 5px;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .playlist-item:hover {
+            background: #e8e8e8;
+        }
+
+        .playlist-item.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .remove-btn {
+            background: #ff4757;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .remove-btn:hover {
+            background: #ff3838;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        button:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.active {
+            background: #48bb78;
+        }
+
+        .time-display {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: #333;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.1s;
+        }
+
+        .fx-controls {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .fx-controls h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 16px;
+        }
+
+        .fx-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .fx-control label {
+            min-width: 100px;
+            color: #555;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        .fx-control span {
+            min-width: 40px;
+            text-align: right;
+            color: #555;
+        }
+
+        #visualizer {
+            width: 100%;
+            height: 100px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            display: block;
+        }
+
+        .mode-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .mode-buttons button {
+            font-size: 12px;
+            padding: 8px 16px;
+        }
+
+        .empty-playlist {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <h1>🎵 Web Audio Player</h1>
+        
+        <!-- File Input -->
+        <div class="file-input-section">
+            <label for="fileInput" class="file-input-label">
+                ➕ Add Music Files
+            </label>
+            <input type="file" id="fileInput" accept="audio/*" multiple>
+        </div>
+
+        <!-- Playlist -->
+        <div class="playlist" id="playlist">
+            <div class="empty-playlist">No songs in playlist. Add some music!</div>
+        </div>
+
+        <!-- Time Display -->
+        <div class="time-display">
+            <span id="currentTime">0:00</span> / <span id="totalTime">0:00</span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="progress-bar" id="progressBar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+
+        <!-- Playback Controls -->
+        <div class="controls">
+            <button id="prevBtn" title="prev">⏮</button>
+            <button id="playBtn" title="play">▶</button>
+            <button id="pauseBtn" title="pause">⏸</button>
+            <button id="stopBtn" title="stop">⏹</button>
+            <button id="nextBtn" title="next">⏭</button>
+            <button id="visualizerBtn">📊 OFF</button>
+        </div>
+
+        <!-- Mode Buttons -->
+        <div class="mode-buttons">
+            <button id="loopListBtn" title="loop list">🔁</button>
+            <button id="loopOneBtn" title="loop one">🔂</button>
+            <button id="randomBtn" title="random">🔀</button>
+        </div>
+
+        <!-- Visualizer Toggle and Canvas -->
+        <canvas id="visualizer" style="display: none;"></canvas>
+
+        <!-- FX Controls -->
+        <div class="fx-controls">
+            <div class="fx-control">
+                <label>Volume:</label>
+                <input type="range" id="volumeAmount" min="0" max="100" value="100">
+                <span id="volumeValue">100%</span>
+            </div>
+            <h3>Effects</h3>
+            <div class="fx-control">
+                <label>Reverb:</label>
+                <input type="range" id="reverbAmount" min="0" max="100" value="0">
+                <span id="reverbValue">0%</span>
+            </div>
+            <div class="fx-control">
+                <label>Bass Boost:</label>
+                <input type="range" id="bassBoost" min="0" max="20" value="0">
+                <span id="bassValue">0dB</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="music.js"></script>
+</body>
+</html>
