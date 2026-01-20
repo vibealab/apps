@@ -1,5 +1,3 @@
-alert('please search astronomy.browser.min.js, download and then remove this line');
-
 // Astrology Calculator - Main JavaScript File
 // Uses astronomy-engine for precise astronomical calculations
 
