@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astrology Calculator</title>
+    <style>
+        :root {
+            --bg-dark: #1a1a2e;
+            --bg-card: #16213e;
+            --accent: #e94560;
+            --accent-secondary: #7b68ee;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0b0;
+            --gold: #ffd700;
+            --fire: #ff6b6b;
+            --earth: #98d8aa;
+            --air: #a8e6cf;
+            --water: #6bcbef;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: var(--text-secondary);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            background: var(--bg-card);
+            border: 2px solid transparent;
+            color: var(--text-primary);
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--accent);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border-color: transparent;
+        }
+
+        .input-section {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-section h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .form-group input, .form-group select {
+            padding: 10px 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            border: none;
+            color: white;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(233, 69, 96, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--accent);
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 1000px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-section {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 15px;
+        }
+
+        .chart-section h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        #chartCanvas, #chartCanvas2 {
+            width: 100%;
+            height: auto;
+            background: radial-gradient(circle at center, #1e2a4a 0%, var(--bg-dark) 100%);
+            border-radius: 50%;
+        }
+
+        .results-section {
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 15px;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .results-section h2 {
+            margin-bottom: 20px;
+            color: var(--accent);
+            position: sticky;
+            top: 0;
+            background: var(--bg-card);
+            padding-bottom: 10px;
+        }
+
+        .planet-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .planet-table th, .planet-table td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        .planet-table th {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .planet-icon {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .sign-fire { color: var(--fire); }
+        .sign-earth { color: var(--earth); }
+        .sign-air { color: var(--air); }
+        .sign-water { color: var(--water); }
+
+        .aspect-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin: 2px;
+        }
+
+        .aspect-conjunction { background: #ffd700; color: #000; }
+        .aspect-sextile { background: #4CAF50; color: #fff; }
+        .aspect-square { background: #f44336; color: #fff; }
+        .aspect-trine { background: #2196F3; color: #fff; }
+        .aspect-opposition { background: #9C27B0; color: #fff; }
+        .aspect-quincunx { background: #FF9800; color: #fff; }
+
+        .toggle-section {
+            margin-top: 10px;
+        }
+
+        .toggle-section summary {
+            cursor: pointer;
+            padding: 10px;
+            background: var(--bg-dark);
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .person-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .synastry-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .synastry-chart {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        #loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--bg-card);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: var(--bg-dark);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .chart-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.85rem;
+        }
+
+        .legend-color {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading" class="hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <header>
+            <h1>✨ Astrology Calculator ✨</h1>
+            <p>Calculate birth charts, synastry, and transits with precision</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="natal">🌟 Natal Chart</button>
+            <button class="tab-btn" data-tab="synastry">💕 Synastry</button>
+            <button class="tab-btn" data-tab="transit">🌍 Transits</button>
+        </div>
+
+        <!-- Natal Chart Input -->
+        <div id="natal-input" class="input-section">
+            <h2>Birth Information</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="name1">Name</label>
+                    <input type="text" id="name1" placeholder="Enter name" value="Person">
+                </div>
+                <div class="form-group">
+                    <label for="birthdate1">Birth Date</label>
+                    <input type="date" id="birthdate1" value="1990-06-15">
+                </div>
+                <div class="form-group">
+                    <label for="birthtime1">Birth Time</label>
+                    <input type="time" id="birthtime1" value="12:00">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="lat1">Latitude</label>
+                    <input type="number" id="lat1" step="0.0001" placeholder="e.g., 40.7128" value="40.7128">
+                </div>
+                <div class="form-group">
+                    <label for="lon1">Longitude</label>
+                    <input type="number" id="lon1" step="0.0001" placeholder="e.g., -74.0060" value="-74.0060">
+                </div>
+                <div class="form-group">
+                    <label for="timezone1">Timezone (UTC offset)</label>
+                    <input type="number" id="timezone1" step="0.5" placeholder="e.g., -5" value="-5">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="housesystem">House System</label>
+                    <select id="housesystem">
+                        <option value="placidus">Placidus</option>
+                        <option value="koch">Koch</option>
+                        <option value="equal">Equal</option>
+                        <option value="wholesign">Whole Sign</option>
+                        <option value="campanus">Campanus</option>
+                        <option value="regiomontanus">Regiomontanus</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn" onclick="calculateNatalChart()">Calculate Chart</button>
+        </div>
+
+        <!-- Synastry Input -->
+        <div id="synastry-input" class="input-section hidden">
+            <h2>Person 1 - Birth Information</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="syn-name1">Name</label>
+                    <input type="text" id="syn-name1" placeholder="Person 1" value="Person 1">
+                </div>
+                <div class="form-group">
+                    <label for="syn-birthdate1">Birth Date</label>
+                    <input type="date" id="syn-birthdate1" value="1990-06-15">
+                </div>
+                <div class="form-group">
+                    <label for="syn-birthtime1">Birth Time</label>
+                    <input type="time" id="syn-birthtime1" value="12:00">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="syn-lat1">Latitude</label>
+                    <input type="number" id="syn-lat1" step="0.0001" value="40.7128">
+                </div>
+                <div class="form-group">
+                    <label for="syn-lon1">Longitude</label>
+                    <input type="number" id="syn-lon1" step="0.0001" value="-74.0060">
+                </div>
+                <div class="form-group">
+                    <label for="syn-timezone1">Timezone</label>
+                    <input type="number" id="syn-timezone1" step="0.5" value="-5">
+                </div>
+            </div>
+
+            <h2 style="margin-top: 20px;">Person 2 - Birth Information</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="syn-name2">Name</label>
+                    <input type="text" id="syn-name2" placeholder="Person 2" value="Person 2">
+                </div>
+                <div class="form-group">
+                    <label for="syn-birthdate2">Birth Date</label>
+                    <input type="date" id="syn-birthdate2" value="1992-03-20">
+                </div>
+                <div class="form-group">
+                    <label for="syn-birthtime2">Birth Time</label>
+                    <input type="time" id="syn-birthtime2" value="15:30">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="syn-lat2">Latitude</label>
+                    <input type="number" id="syn-lat2" step="0.0001" value="34.0522">
+                </div>
+                <div class="form-group">
+                    <label for="syn-lon2">Longitude</label>
+                    <input type="number" id="syn-lon2" step="0.0001" value="-118.2437">
+                </div>
+                <div class="form-group">
+                    <label for="syn-timezone2">Timezone</label>
+                    <input type="number" id="syn-timezone2" step="0.5" value="-8">
+                </div>
+            </div>
+            <button class="btn" onclick="calculateSynastry()">Calculate Synastry</button>
+        </div>
+
+        <!-- Transit Input -->
+        <div id="transit-input" class="input-section hidden">
+            <h2>Natal Birth Information</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="transit-name">Name</label>
+                    <input type="text" id="transit-name" placeholder="Enter name" value="Person">
+                </div>
+                <div class="form-group">
+                    <label for="transit-birthdate">Birth Date</label>
+                    <input type="date" id="transit-birthdate" value="1990-06-15">
+                </div>
+                <div class="form-group">
+                    <label for="transit-birthtime">Birth Time</label>
+                    <input type="time" id="transit-birthtime" value="12:00">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="transit-lat">Latitude</label>
+                    <input type="number" id="transit-lat" step="0.0001" value="40.7128">
+                </div>
+                <div class="form-group">
+                    <label for="transit-lon">Longitude</label>
+                    <input type="number" id="transit-lon" step="0.0001" value="-74.0060">
+                </div>
+                <div class="form-group">
+                    <label for="transit-timezone">Timezone</label>
+                    <input type="number" id="transit-timezone" step="0.5" value="-5">
+                </div>
+            </div>
+
+            <h2 style="margin-top: 20px;">Transit Date/Time</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="transit-date">Transit Date</label>
+                    <input type="date" id="transit-date">
+                </div>
+                <div class="form-group">
+                    <label for="transit-time">Transit Time</label>
+                    <input type="time" id="transit-time" value="12:00">
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-secondary" onclick="setTransitToNow()">Set to Now</button>
+                </div>
+            </div>
+            <button class="btn" onclick="calculateTransit()">Calculate Transits</button>
+        </div>
+
+        <!-- Results Area -->
+        <div class="main-content">
+            <div class="chart-section">
+                <h2>Chart</h2>
+                <div class="chart-container">
+                    <canvas id="chartCanvas" width="500" height="500"></canvas>
+                </div>
+                <div class="chart-legend" id="chartLegend"></div>
+                <div id="secondChart" class="hidden" style="margin-top: 20px;">
+                    <h3 style="text-align: center; margin-bottom: 10px;">Synastry/Transit Chart</h3>
+                    <div class="chart-container">
+                        <canvas id="chartCanvas2" width="500" height="500"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-section">
+                <h2>Results</h2>
+                <div id="resultsContent">
+                    <div class="info-box">
+                        <p>Enter birth information and click "Calculate" to see the astrological chart and positions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Include Astronomy Engine -->
+    <script src="astronomy.browser.min.js"></script>
+    <script src="star.js"></script>
+</body>
+</html>
