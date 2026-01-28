@@ -9,3 +9,4 @@ out-of-box applications with html/css/js, just need a modern browser to run.
 - music player
   - music player
   - audio wave analyzer
+- aes file codec
